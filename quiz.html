@@ -2,23 +2,25 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>황감제 MBTI 테스트</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="flex items-center justify-center min-h-screen bg-gradient-to-br from-orange-100 to-green-100 font-sans">
-  <div class="bg-white p-8 rounded-3xl shadow-2xl w-[90%] max-w-lg text-center border-4 border-orange-300">
-    <!-- 귤 아이콘 -->
-    <div class="text-5xl mb-4">🍊</div>
-
-    <!-- 제목 -->
-    <h1 class="text-3xl font-extrabold text-orange-500 mb-6">황감제 MBTI 테스트</h1>
+<body class="flex items-center justify-center min-h-screen bg-gradient-to-br from-orange-100 to-green-100 font-sans p-4">
+  <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl w-full sm:w-[90%] max-w-2xl text-center border-4 border-orange-300 min-h-[85vh] flex flex-col justify-between">
+    
+    <!-- 상단 귤 아이콘 -->
+    <div>
+      <div class="text-7xl sm:text-6xl mb-4">🍊</div>
+      <h1 class="text-4xl sm:text-3xl font-extrabold text-orange-500 mb-6">황감제 MBTI 테스트</h1>
+    </div>
 
     <!-- 질문 영역 -->
-    <div id="quiz" class="mb-6 text-lg font-medium text-gray-700"></div>
+    <div id="quiz" class="mb-6 text-xl sm:text-lg font-medium text-gray-700 flex-1 flex items-center justify-center"></div>
 
     <!-- 결과 버튼 (처음에는 숨김) -->
     <button id="resultBtn" onclick="calculateResult()"
-      class="w-full py-3 bg-orange-400 text-white text-lg font-semibold rounded-xl hover:bg-orange-500 hover:scale-105 transition transform hidden">
+      class="w-full py-4 bg-orange-400 text-white text-xl font-semibold rounded-xl shadow-md hover:bg-orange-500 hover:scale-105 transition transform hidden">
       결과 보기 🍊
     </button>
   </div>
@@ -46,16 +48,20 @@
       if(current < questions.length) {
         const q = questions[current];
         document.getElementById("quiz").innerHTML =
-          `<div class="mb-6 text-xl font-semibold">${q.q}</div>
-           <div class="flex flex-col space-y-4">
-             <button onclick="selectAnswer('${q.t[0]}')" class="py-3 bg-green-400 text-white rounded-xl hover:bg-green-500 hover:scale-105 transition transform">${q.a[0]}</button>
-             <button onclick="selectAnswer('${q.t[1]}')" class="py-3 bg-orange-400 text-white rounded-xl hover:bg-orange-500 hover:scale-105 transition transform">${q.a[1]}</button>
+          `<div class="w-full">
+             <div class="mb-6 text-2xl sm:text-xl font-semibold">${q.q}</div>
+             <div class="flex flex-col space-y-4">
+               <button onclick="selectAnswer('${q.t[0]}')" 
+                 class="py-4 text-lg sm:text-base bg-green-400 text-white rounded-xl shadow hover:bg-green-500 hover:scale-105 transition transform">${q.a[0]}</button>
+               <button onclick="selectAnswer('${q.t[1]}')" 
+                 class="py-4 text-lg sm:text-base bg-orange-400 text-white rounded-xl shadow hover:bg-orange-500 hover:scale-105 transition transform">${q.a[1]}</button>
+             </div>
            </div>`;
 
         // 질문 진행 중에는 결과 버튼 숨김
         document.getElementById("resultBtn").classList.add("hidden");
       } else {
-        document.getElementById("quiz").innerHTML = "<p class='text-lg font-medium'>모든 질문 완료! 🍊</p>";
+        document.getElementById("quiz").innerHTML = "<p class='text-2xl font-medium text-gray-700'>모든 질문 완료! 🍊</p>";
         // 마지막 질문 후 결과 버튼 표시
         document.getElementById("resultBtn").classList.remove("hidden");
       }
