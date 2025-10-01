@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>황감제 테스트 결과</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gradient-to-br from-orange-100 to-green-100 font-sans">
+  <div class="bg-white p-10 rounded-3xl shadow-2xl w-[90%] max-w-lg text-center border-4 border-orange-300">
+    <!-- 귤 아이콘 -->
+    <div class="text-6xl mb-4">🍊</div>
+
+    <!-- 제목 -->
+    <h1 class="text-3xl font-extrabold text-orange-500 mb-6">당신의 MBTI 결과</h1>
+
+    <!-- 결과 텍스트 -->
+    <div id="result-text" class="text-xl text-gray-800 font-bold mb-4"></div>
+
+    <!-- 결과 설명 -->
+    <div id="result-desc" class="text-lg text-gray-700 mb-6"></div>
+
+    <!-- 결과 이미지 -->
+    <img id="result-img" src="" alt="결과 이미지" 
+         class="mx-auto w-64 rounded-xl shadow-md border-2 border-orange-200 mb-6">
+
+    <!-- 버튼 영역 -->
+<div class="space-y-4">
+  <!-- 다시 테스트하기 버튼 -->
+  <button onclick="window.location.href='title.html'" 
+          class="w-full py-3 bg-orange-400 text-white text-lg font-semibold rounded-xl hover:bg-orange-500 hover:scale-105 transition transform">
+    다시 테스트하기 🍊
+  </button>
+
+  <!-- 결과 공유 버튼 -->
+  <button onclick="shareResult()" 
+          class="w-full py-3 bg-green-400 text-white text-lg font-semibold rounded-xl hover:bg-green-500 hover:scale-105 transition transform">
+    결과 공유하기 📤
+  </button>
+</div>
+
+  <script>
+    const results = {
+  "INTJ": {
+    text:"전략가형 INTJ 🍊",
+    description:"계획적이고 분석적인 성향으로 목표 달성을 위해 치밀하게 움직이는 스타일이에요.",
+    img:"cards/INTJ.png"
+  },
+  "ENTP": {
+    text:"토론가형 ENTP 🍊",
+    description:"아이디어가 풍부하고 친구들과 함께 에너지를 나누며 활발하게 활동하는 스타일이에요.",
+    img:"cards/ENTP.png"
+  },
+  "INFJ": {
+    text:"선의의 옹호자형 INFJ 🍊",
+    description:"남을 배려하고 깊은 통찰을 가진 성향으로 친구와 동료에게 좋은 영향을 주는 스타일이에요.",
+    img:"cards/INFJ.png"
+  },
+  "ENFP": {
+    text:"재기발랄형 ENFP 🍊",
+    description:"호기심이 많고 새로운 경험을 즐기며 사람들과 활발하게 소통하는 스타일이에요.",
+    img:"cards/ENFP.png"
+  },
+  "ISTJ": {
+    text:"청렴결백형 ISTJ 🍊",
+    description:"책임감 있고 신뢰할 수 있는 성향으로 맡은 일에 성실히 임하는 스타일이에요.",
+    img:"cards/ISTJ.png"
+  },
+  "ESTJ": {
+    text:"경영자형 ESTJ 🍊",
+    description:"체계적이고 조직적인 성향으로 친구나 팀을 효율적으로 이끄는 스타일이에요.",
+    img:"cardsESTJ.png"
+  },
+  "ISFJ": {
+    text:"용감한 수호자형 ISFJ 🍊",
+    description:"배려심 많고 성실하며 주변 사람을 돕는 데 열정적인 스타일이에요.",
+    img:"cards/ISFJ.png"
+  },
+  "ESFJ": {
+    text:"사교적인 외교관형 ESFJ 🍊",
+    description:"친화력이 높고 분위기를 즐겁게 만드는 성향으로 친구들과 협력하는 스타일이에요.",
+    img:"cards/ESFJ.png"
+  },
+  "ISTP": {
+    text:"만능 재주꾼형 ISTP 🍊",
+    description:"실용적이고 문제 해결 능력이 뛰어나며 자유로운 성향을 가진 스타일이에요.",
+    img:"cards/ISTP.png"
+  },
+  "ESTP": {
+    text:"사업가형 ESTP 🍊",
+    description:"모험을 즐기고 순간의 기회를 잘 활용하며 활동적인 성향을 가진 스타일이에요.",
+    img:"cards/ESTP.png"
+  },
+  "ISFP": {
+    text:"호기심 많은 예술가형 ISFP 🍊",
+    description:"감각적이고 개성 있는 삶을 즐기며 자연스럽게 친구들에게 편안함을 주는 스타일이에요.",
+    img:"cards/ISFP.png"
+  },
+  "ESFP": {
+    text:"연예인형 ESFP 🍊",
+    description:"사람들과 함께하는 즐거움을 추구하고 활발하게 분위기를 만드는 스타일이에요.",
+    img:"cards/ESFP.png"
+  },
+  "INFP": {
+    text:"중재자형 INFP 🍊",
+    description:"내면이 풍부하고 이상을 추구하며 친구와 주변 사람들을 깊이 이해하는 스타일이에요.",
+    img:"cards/INFP.png"
+  },
+  "ENFJ": {
+    text:"선도자형 ENFJ 🍊",
+    description:"타인을 이끌고 돕는 데 강점을 가지며, 사람들과 조화롭게 협력하는 스타일이에요.",
+    img:"cards/ENFJ.png"
+  },
+  "INTP": {
+    text:"논리적인 사색가형 INTP 🍊",
+    description:"분석적이고 창의적이며 문제를 논리적으로 해결하는 것을 즐기는 스타일이에요.",
+    img:"cards/INTP.png"
+  },
+  "ENTJ": {
+    text:"대담한 통솔자형 ENTJ 🍊",
+    description:"목표 지향적이고 리더십이 강하며 친구나 팀을 효율적으로 이끄는 스타일이에요.",
+    img:"cards/ENTJ.png"
+  }
+};
+
+
+    const mbti = localStorage.getItem("mbti");
+    const result = results[mbti] || {text:"결과 준비중 🍊", description:"설명이 아직 준비되지 않았습니다.", img:"cards/default.png"};
+
+    document.getElementById("result-text").innerText = result.text;
+    document.getElementById("result-desc").innerText = result.description;
+    document.getElementById("result-img").src = result.img;
+
+    // SNS 공유 함수
+    function shareResult() {
+      const shareData = {
+        title: "황감제 MBTI 테스트",
+        text: `내 결과는 ${mbti} 🍊! ${result.text} - ${result.description}`,
+        url: window.location.href
+      };
+      if (navigator.share) {
+        navigator.share(shareData).catch(console.error);
+      } else {
+        alert("이 브라우저에서는 공유 기능이 지원되지 않아요. 링크를 직접 복사해 주세요!");
+      }
+    }
+  </script>
+</body>
+</html>

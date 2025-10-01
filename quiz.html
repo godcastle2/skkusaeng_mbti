@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>황감제 MBTI 테스트</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gradient-to-br from-orange-100 to-green-100 font-sans">
+  <div class="bg-white p-8 rounded-3xl shadow-2xl w-[90%] max-w-lg text-center border-4 border-orange-300">
+    <!-- 귤 아이콘 -->
+    <div class="text-5xl mb-4">🍊</div>
+
+    <!-- 제목 -->
+    <h1 class="text-3xl font-extrabold text-orange-500 mb-6">황감제 MBTI 테스트</h1>
+
+    <!-- 질문 영역 -->
+    <div id="quiz" class="mb-6 text-lg font-medium text-gray-700"></div>
+
+    <!-- 결과 버튼 (처음에는 숨김) -->
+    <button id="resultBtn" onclick="calculateResult()"
+      class="w-full py-3 bg-orange-400 text-white text-lg font-semibold rounded-xl hover:bg-orange-500 hover:scale-105 transition transform hidden">
+      결과 보기 🍊
+    </button>
+  </div>
+
+  <script>
+    // 질문 배열 (10문항)
+    const questions = [
+      {q:"동아리 모임에서 나는?", a:["먼저 다가간다(E)", "다가와주길 기다린다(I)"], t:["E","I"]},
+      {q:"시험공부는?", a:["계획대로(J)", "즉흥적으로(P)"], t:["J","P"]},
+      {q:"친구와의 대화는?", a:["현실적 이야기(S)", "상상/아이디어(N)"], t:["S","N"]},
+      {q:"문제 상황에서?", a:["논리적으로 해결(T)", "감정 공감 위주(F)"], t:["T","F"]},
+      {q:"새로운 모임에서?", a:["에너지 얻는다(E)", "에너지 소모된다(I)"], t:["E","I"]},
+      {q:"레포트 작성은?", a:["세부 자료 중심(S)", "큰 그림 위주(N)"], t:["S","N"]},
+      {q:"갈등 상황에서?", a:["논리로 설득(T)", "감정 배려(F)"], t:["T","F"]},
+      {q:"방학 계획은?", a:["계획표 작성(J)", "그때그때(P)"], t:["J","P"]},
+      {q:"여행 스타일은?", a:["즉흥적으로 즐김(P)", "계획적으로 움직임(J)"], t:["P","J"]},
+      {q:"휴식할 때?", a:["사람들과 어울림(E)", "혼자만의 시간(I)"], t:["E","I"]}
+    ];
+
+    let current = 0;
+    let scores = {E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};
+
+    // 질문 불러오기
+    function loadQuestion() {
+      if(current < questions.length) {
+        const q = questions[current];
+        document.getElementById("quiz").innerHTML =
+          `<div class="mb-6 text-xl font-semibold">${q.q}</div>
+           <div class="flex flex-col space-y-4">
+             <button onclick="selectAnswer('${q.t[0]}')" class="py-3 bg-green-400 text-white rounded-xl hover:bg-green-500 hover:scale-105 transition transform">${q.a[0]}</button>
+             <button onclick="selectAnswer('${q.t[1]}')" class="py-3 bg-orange-400 text-white rounded-xl hover:bg-orange-500 hover:scale-105 transition transform">${q.a[1]}</button>
+           </div>`;
+
+        // 질문 진행 중에는 결과 버튼 숨김
+        document.getElementById("resultBtn").classList.add("hidden");
+      } else {
+        document.getElementById("quiz").innerHTML = "<p class='text-lg font-medium'>모든 질문 완료! 🍊</p>";
+        // 마지막 질문 후 결과 버튼 표시
+        document.getElementById("resultBtn").classList.remove("hidden");
+      }
+    }
+
+    // 답 선택 시 점수 업데이트
+    function selectAnswer(trait) {
+      scores[trait]++;
+      current++;
+      loadQuestion();
+    }
+
+    // 결과 계산 후 result.html로 이동
+    function calculateResult() {
+      let mbti = "";
+      mbti += scores["E"] >= scores["I"] ? "E" : "I";
+      mbti += scores["S"] >= scores["N"] ? "S" : "N";
+      mbti += scores["T"] >= scores["F"] ? "T" : "F";
+      mbti += scores["J"] >= scores["P"] ? "J" : "P";
+
+      localStorage.setItem("mbti", mbti);
+      window.location.href = "result.html";
+    }
+
+    // 첫 질문 불러오기
+    loadQuestion();
+  </script>
+</body>
+</html>
