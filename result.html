@@ -68,7 +68,7 @@
         img:"cardsISTJ.png"
       },
       "ESTJ": {
-        text:"경영자형 ESTJ 🍊",
+        text:"줄 세우는 반장 귤 ESTJ 🍊",
         description:"체계적이고 조직적인 성향으로 친구나 팀을 효율적으로 이끄는 스타일이에요.",
         img:"cardsESTJ.png"
       },
@@ -125,7 +125,7 @@
     };
 
     const mbti = localStorage.getItem("mbti");
-    const result = results[mbti] || {text:"결과 준비중 🍊", description:"설명이 아직 준비되지 않았습니다.", img:"cards/default.png"};
+    const result = results[mbti] || {text:"결과 준비중 🍊", description:"설명이 아직 준비되지 않았습니다.", img:"default.png"};
 
     document.getElementById("result-text").innerText = result.text;
     document.getElementById("result-desc").innerText = result.description;
@@ -147,5 +147,6 @@
   </script>
 </body>
 </html>
+
 
 
