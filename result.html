@@ -1,152 +1,429 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 필수 메타 -->
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  />
   <title>황감제 테스트 결과</title>
+
+  <!-- SEO/브라우저 기본 설정 -->
+  <!-- 브라우저 상단 주소창 테마색: 안드로이드 크롬 등 -->
+  <meta name="theme-color" content="#fb923c" />
+
+  <!-- 정규화 URL: 배포 도메인으로 교체 -->
+  <link rel="canonical" href="https://example.com/result.html" />
+
+  <!-- 파비콘: 프로젝트에 맞춰 교체 -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+  <!-- Open Graph / Twitter 카드: SNS 공유 미리보기용
+       주의: 클라이언트 JS로 동적으로 바꾸기 어렵다.
+       타입별 OG 이미지를 노출하려면 SSR(서버 프리렌더) 또는 정적 빌드가 필요 -->
+  <meta property="og:title" content="황감제 MBTI 테스트 결과" />
+  <meta
+    property="og:description"
+    content="나의 황감제 MBTI 결과를 확인하고 친구들과 공유하세요."
+  />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="cards/preview.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Tailwind CDN: 프로덕션에선 자체 빌드 권장 -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 모션 최소화: 시각 민감 사용자 고려 -->
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      .animate-bounce {
+        animation: none !important;
+      }
+    }
+  </style>
 </head>
-<body class="flex items-center justify-center min-h-screen bg-gradient-to-br from-orange-100 to-green-100 font-sans p-4">
-  <div class="bg-white p-8 rounded-3xl shadow-2xl w-[95%] text-center border-4 border-orange-300">
-    <!-- 귤 아이콘 -->
-    <div class="text-7xl mb-4 animate-bounce">🍊</div>
 
-    <!-- 제목 -->
-    <h1 class="text-3xl font-extrabold text-orange-500 mb-6">당신의 MBTI 결과</h1>
+<!--
+  레이아웃:
+  - 화면 중앙 정렬
+  - 그라디언트 배경
+  - 다크모드 클래스(.dark) 지원
+-->
+<body
+  class="flex items-center justify-center min-h-screen bg-gradient-to-br from-orange-100 to-green-100 dark:from-neutral-900 dark:to-neutral-800 font-sans p-4"
+>
+  <!-- 결과 카드 컨테이너 -->
+  <div
+    class="bg-white dark:bg-neutral-900 dark:text-neutral-100 p-8 rounded-3xl shadow-2xl w-[95%] max-w-xl text-center border-4 border-orange-300 dark:border-neutral-700"
+  >
+    <!-- 장식용 이모지. 스크린리더 비노출 -->
+    <div class="text-7xl mb-4 animate-bounce" aria-hidden="true">🍊</div>
 
-    <!-- 결과 텍스트 -->
-    <div id="result-text" class="text-2xl text-gray-800 font-bold mb-4"></div>
+    <!-- 페이지 타이틀 -->
+    <h1 class="text-3xl font-extrabold text-orange-500 dark:text-orange-400 mb-6">
+      당신의 MBTI 결과
+    </h1>
+
+    <!-- 결과 제목: 실시간 갱신되므로 보조공학에게 상태변경 알림 -->
+    <div
+      id="result-text"
+      class="text-2xl text-gray-800 dark:text-neutral-100 font-bold mb-3"
+      role="status"
+      aria-live="polite"
+    ></div>
 
     <!-- 결과 설명 -->
-    <div id="result-desc" class="text-base text-gray-700 leading-relaxed mb-6"></div>
+    <div
+      id="result-desc"
+      class="text-base text-gray-700 dark:text-neutral-300 leading-relaxed mb-6"
+    ></div>
 
-    <!-- 결과 이미지 -->
-    <img id="result-img" src="" alt="결과 이미지" 
-         class="mx-auto w-64 rounded-xl shadow-md border-2 border-orange-200 mb-6">
+    <!-- 결과 이미지: 지연 로딩 + 실패 폴백 -->
+  <!-- 결과 이미지 -->
+<img
+  id="result-img"
+  src=""
+  alt="MBTI 결과 카드"
+  loading="lazy"
+  class="mx-auto w-64 rounded-xl shadow-md border-2 border-orange-200 dark:border-neutral-700 mb-6"
+/>
+<!-- 이미지 설명 (사진 아래 텍스트) -->
+<div
+  id="result-caption"
+  class="text-sm text-gray-600 dark:text-neutral-400 italic mb-6"
+></div>
+
 
     <!-- 버튼 영역 -->
-    <div class="space-y-4">
-      <!-- 다시 테스트하기 버튼 -->
-      <button onclick="window.location.href='index.html'" 
-              class="w-full py-3 bg-orange-400 text-white text-lg font-semibold rounded-xl shadow-md hover:bg-orange-500 hover:scale-105 transition transform duration-300">
+    <div class="space-y-3">
+      <!-- 다시 테스트하기 -->
+      <button
+        type="button"
+        id="retakeBtn"
+        class="w-full py-3 bg-orange-400 text-white text-lg font-semibold rounded-xl shadow-md hover:bg-orange-500 hover:scale-105 transition transform duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-orange-300"
+        aria-label="다시 테스트하기로 이동"
+      >
         다시 테스트하기 🍊
       </button>
 
-      <!-- 결과 공유 버튼 -->
-      <button onclick="shareResult()" 
-              class="w-full py-3 bg-green-400 text-white text-lg font-semibold rounded-xl shadow-md hover:bg-green-500 hover:scale-105 transition transform duration-300">
+      <!-- 결과 공유하기: Web Share API 우선 -->
+      <button
+        type="button"
+        id="shareBtn"
+        class="w-full py-3 bg-green-500 text-white text-lg font-semibold rounded-xl shadow-md hover:bg-green-600 hover:scale-105 transition transform duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-green-300"
+        aria-label="결과를 공유하기"
+      >
         결과 공유하기 📤
       </button>
+
+      <!-- 링크 복사하기: 모든 환경 백업 -->
+      <button
+        type="button"
+        id="copyBtn"
+        class="w-full py-3 bg-gray-200 dark:bg-neutral-800 text-gray-800 dark:text-neutral-100 text-sm font-medium rounded-xl hover:bg-gray-300 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-4 focus-visible:ring-gray-300"
+        aria-label="공유 링크 복사"
+      >
+        링크 복사하기 🔗
+      </button>
     </div>
+
+    <!-- 상태/안내 메시지 -->
+    <p id="notice" class="text-xs text-gray-500 dark:text-neutral-400 mt-4"></p>
   </div>
 
   <script>
-    const results = {
-      "INTJ": {
-        text:"전략가형 INTJ 🍊",
-        description:"계획적이고 분석적인 성향으로 목표 달성을 위해 치밀하게 움직이는 스타일이에요.",
-        img:"cardsINTJ.png"
-      },
-      "ENTP": {
-        text:"토론가형 ENTP 🍊",
-        description:"아이디어가 풍부하고 친구들과 함께 에너지를 나누며 활발하게 활동하는 스타일이에요.",
-        img:"cardsENTP.png"
-      },
-      "INFJ": {
-        text:"선의의 옹호자형 INFJ 🍊",
-        description:"남을 배려하고 깊은 통찰을 가진 성향으로 친구와 동료에게 좋은 영향을 주는 스타일이에요.",
-        img:"cardsINFJ.png"
-      },
-      "ENFP": {
-        text:"재기발랄형 ENFP 🍊",
-        description:"호기심이 많고 새로운 경험을 즐기며 사람들과 활발하게 소통하는 스타일이에요.",
-        img:"cardsENFP.png"
-      },
-      "ISTJ": {
-        text:"청렴결백형 ISTJ 🍊",
-        description:"책임감 있고 신뢰할 수 있는 성향으로 맡은 일에 성실히 임하는 스타일이에요.",
-        img:"cardsISTJ.png"
-      },
-      "ESTJ": {
-        text:"줄 세우는 반장 귤 ESTJ 🍊",
-        description:"체계적이고 조직적인 성향으로 친구나 팀을 효율적으로 이끄는 스타일이에요.",
-        img:"cardsESTJ.png"
-      },
-      "ISFJ": {
-        text:"용감한 수호자형 ISFJ 🍊",
-        description:"배려심 많고 성실하며 주변 사람을 돕는 데 열정적인 스타일이에요.",
-        img:"cardsISFJ.png"
-      },
-      "ESFJ": {
-        text:"사교적인 외교관형 ESFJ 🍊",
-        description:"친화력이 높고 분위기를 즐겁게 만드는 성향으로 친구들과 협력하는 스타일이에요.",
-        img:"cardsESFJ.png"
-      },
-      "ISTP": {
-        text:"만능 재주꾼형 ISTP 🍊",
-        description:"실용적이고 문제 해결 능력이 뛰어나며 자유로운 성향을 가진 스타일이에요.",
-        img:"cardsISTP.png"
-      },
-      "ESTP": {
-        text:"사업가형 ESTP 🍊",
-        description:"모험을 즐기고 순간의 기회를 잘 활용하며 활동적인 성향을 가진 스타일이에요.",
-        img:"cardsESTP.png"
-      },
-      "ISFP": {
-        text:"호기심 많은 예술가형 ISFP 🍊",
-        description:"감각적이고 개성 있는 삶을 즐기며 자연스럽게 친구들에게 편안함을 주는 스타일이에요.",
-        img:"cardsISFP.png"
-      },
-      "ESFP": {
-        text:"연예인형 ESFP 🍊",
-        description:"사람들과 함께하는 즐거움을 추구하고 활발하게 분위기를 만드는 스타일이에요.",
-        img:"cardsESFP.png"
-      },
-      "INFP": {
-        text:"중재자형 INFP 🍊",
-        description:"내면이 풍부하고 이상을 추구하며 친구와 주변 사람들을 깊이 이해하는 스타일이에요.",
-        img:"cardsINFP.png"
-      },
-      "ENFJ": {
-        text:"선도자형 ENFJ 🍊",
-        description:"타인을 이끌고 돕는 데 강점을 가지며, 사람들과 조화롭게 협력하는 스타일이에요.",
-        img:"cardsENFJ.png"
-      },
-      "INTP": {
-        text:"논리적인 사색가형 INTP 🍊",
-        description:"분석적이고 창의적이며 문제를 논리적으로 해결하는 것을 즐기는 스타일이에요.",
-        img:"cardsINTP.png"
-      },
-      "ENTJ": {
-        text:"대담한 통솔자형 ENTJ 🍊",
-        description:"목표 지향적이고 리더십이 강하며 친구나 팀을 효율적으로 이끄는 스타일이에요.",
-        img:"cardsENTJ.png"
-      }
+    /* ===============================
+       0) 초기 다크모드 동기화
+       - 시스템 설정과 동기화
+       - 필요시 토글 버튼을 추가해 수동 제어 가능
+       =============================== */
+    (function initColorScheme() {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      // 최초 반영
+      document.documentElement.classList.toggle("dark", mq.matches);
+      // 변경 감지
+      mq.addEventListener?.("change", (e) => {
+        document.documentElement.classList.toggle("dark", e.matches);
+      });
+    })();
+
+    /* ===============================
+       1) 결과 정의 사전
+       - 텍스트/설명/이미지 경로
+       - 이미지 규칙: cards/cardsTYPE.png
+       =============================== */
+    const RESULTS = {
+  ESTJ: {
+    text: "줄 세우는 반장 귤 ESTJ 🍊",
+    desc: "이 귤은 정리정돈의 달인! 언제나 질서를 유지하고, 책임감 강한 성격이에요. 효율적이고 계획적인 성격으로, 어떤 일이든 잘 마무리하는 타입입니다.",
+    img: "cardsESTJ.png",
+    caption: "어질러진 일은 내게 맡겨! 반장 귤이 정리해줄게!"
+  },
+  ESFJ: {
+    text: "한 조각씩 나눠주는 천사 귤 ESFJ 🍊",
+    desc: "항상 주변 사람들을 챙기고, 따뜻한 에너지로 모두에게 사랑을 주는 귤. 사람들과 함께 있을 때 가장 행복해하며, 세심하게 배려하는 성격이에요.",
+    img: "cardsESFJ.png",
+    caption: "아낌 없이 주고 싶어, 난 천사 귤이니까!"
+  },
+  ENFJ: {
+    text: "달달하게 챙겨주는 인생 코치 귤 ENFJ 🍊",
+    desc: "항상 다정한 에너지로 사람들을 이끄는 귤. 리더십이 강하고, 사람들의 마음을 사로잡는 매력적인 성격을 가졌어요.",
+    img: "cardsENFJ.png",
+    caption: "힘든 일 있다고? 귤 먹으면서 같이 얘기해보자~"
+  },
+  ENFP: {
+    text: "비타민 C 팡팡 귤 ENFP 🍊",
+    desc: "자유로운 영혼, 새로운 경험을 추구하며 언제나 모험을 떠나는 귤. 생각보다 더 큰 세상에 대한 호기심이 가득하고, 창의력 넘치는 아이디어로 항상 새로운 세상을 만들어갑니다.",
+    img: "cardsENFP.png",
+    caption: "세상 어디든 갈 준비 완료! 다른 귤들과 함께라면!"
+  },
+  ISTJ: {
+    text: "똘똘한 모범생 귤 ISTJ 🍊",
+    desc: "체계적이고 세밀한 성격을 가진 귤. 모든 일을 정확하고 꼼꼼하게 처리하며, 항상 규칙을 따르는 안정적인 성격이에요.",
+    img: "cardsISTJ.png",
+    caption: "언제나 계획대로! 완벽을 추구하는 귤이 될거야!"
+  },
+  ISFJ: {
+    text: "뒤에서 챙겨주는 수호천사 귤 ISFJ 🍊",
+    desc: "사람들에게 따뜻하고 배려심 깊은 귤. 언제나 다른 사람들의 행복을 먼저 생각하며, 착하고 온화한 성격으로 주변을 밝게 만들어요.",
+    img: "cardsISFJ.png",
+    caption: "항상 너를 챙겨줄게, 나는 귤들의 수호천사야!"
+  },
+  INFJ: {
+    text: "조용히 사색하는 현자 귤 INFJ 🍊",
+    desc: "깊은 생각과 철학적인 성격을 가진 귤. 귤들의 내면을 이해하려고 하고, 세상에 더 나은 변화가 일어나길 바라는 귤이에요. 감성적이고 지혜로운 성격.",
+    img: "cardsINFJ.png",
+    caption: "꿈꾸는 귤들의 마음을 이해하는 현자 귤!"
+  },
+  INFP: {
+    text: "새벽 감성 별빛 귤 INFP 🍊",
+    desc: "세상에서 가장 순수하고 이상적인 별귤! 독특한 상상력과 창의력을 자랑하며, 이상적인 세상에 대한 꿈을 가지고 있어요. 감수성이 풍부하고 예술적인 성격.",
+    img: "cardsINFP.png",
+    caption: "내 안의 별처럼 빛나는 감성 귤.."
+  },
+  ESTP: {
+    text: "스릴 만끽 모험가 귤 ESTP 🍊",
+    desc: "모험 귤은 언제나 도전적이고, 직관적으로 움직이는 타입! 자극적인 경험을 추구하며, 현실적인 문제 해결에 능숙하고, 신속하게 결단을 내리는 성격입니다.",
+    img: "cardsESTP.png",
+    caption: "무대 위의 주인공! 모험이 펼쳐진다!"
+  },
+  ESFP: {
+    text: "흥 폭발 댄스 파티 귤 ESFP 🍊",
+    desc: "파티 귤은 언제나 어디서나 즐거운 분위기를 만들어가는 귤. 사람들과 함께 있으면 최고의 파티가 펼쳐지고, 언제나 웃음이 끊이지 않아요. 에너지 넘치고 유쾌한 성격!",
+    img: "cardsESFP.png",
+    caption: "내가 있는 곳엔 파티가 있어! 파티 귤이니까!"
+  },
+  ENTP: {
+    text: "논리적인 아이디어 뱅크 귤 ENTP 🍊",
+    desc: "아이디어가 넘치는 아이디어 귤! 언제나 새로운 생각과 도전을 즐기며, 논리적이고 창의적인 방식으로 문제를 해결하는 능력자입니다. 다양한 관점에서 생각을 펼쳐요.",
+    img: "cardsENTP.png",
+    caption: "어떤 문제든 아이디어로 해결! 아이디어 귤, 놀라운 발상!"
+  },
+  INTP: {
+    text: "이상한 실험실의 괴짜 귤 INTP 🍊",
+    desc: "논리 귤은 항상 이성적으로 생각하며, 세상을 분석하는 성격. 실용적이고 창의적인 사고로 새로운 아이디어를 창출하는 능력을 가지고 있습니다.",
+    img: "cardsINTP.png",
+    caption: "모든 걸 분석하는 박사 귤, 진실을 밝혀낼 거야!"
+  },
+  ISFP: {
+    text: "예술혼 가득 팔레트 귤 ISFP 🍊",
+    desc: "아트 귤은 예술적인 성격을 가진 귤로, 자연과 예술에 대한 깊은 애정을 가지고 있습니다. 감성적이고, 자유로운 스타일로 항상 자신만의 길을 갑니다.",
+    img: "cardsISFP.png",
+    caption: "나만의 색깔로 세상을 물들여주는 아트 귤!"
+  },
+  ISTP: {
+    text: "척척박사 만능 귤 ISTP 🍊",
+    desc: "만능 귤은 항상 새로운 것을 시도하고, 현실적인 문제 해결에 뛰어난 능력을 가진 귤. 모험을 즐기며, 실용적이고 독립적인 성격입니다.",
+    img: "cardsISTP.png",
+    caption: "모험을 떠날 준비 완료! 만능 귤과 함께!"
+  },
+  INTJ: {
+    text: "무를 때까지 내다 보는 계략가 귤 INTJ 🍊",
+    desc: "전략 귤은 항상 미래를 계획하고, 목표를 달성하기 위한 전략을 세우는 성격입니다. 논리적이고 분석적이며, 냉철한 판단력을 가진 귤입니다.",
+    img: "cardsINTJ.png",
+    caption: "내 목표는 확실하다! 전략 귤이 이끄는 길!"
+  },
+  ENTJ: {
+    text: "귤 농장 CEO 귤 ENTJ 🍊",
+    desc: "카리스마 넘치고, 뭐든 직접 해내는 리더십 강한 귤. 체험장 가는 차 안에서 귤 농장 창업 계획 세우는 야망귤.",
+    img: "cardsENTJ.png",
+    caption: "귤 제국은 내가 세운다!!!!!"
+  }
+};
+
+    /* ===============================
+       2) 기본값(유효하지 않을 때 사용)
+       =============================== */
+    const DEFAULT_RESULT = {
+      text: "결과 준비중 🍊",
+      desc: "유효한 결과가 없습니다. 처음 화면으로 돌아가 테스트를 진행해주세요.",
+      img: "cards/default.png",
     };
 
-    const mbti = localStorage.getItem("mbti");
-    const result = results[mbti] || {text:"결과 준비중 🍊", description:"설명이 아직 준비되지 않았습니다.", img:"default.png"};
+    /* ===============================
+       3) MBTI 소스 결합 유틸
+       - 우선순위: URL ?mbti=TYPE > localStorage('mbti')
+       - URL 정규화: storage에서 가져온 경우에도 replaceState로 URL에 mbti 반영
+       =============================== */
+    function getMBTIAndNormalizeURL() {
+      let mbti = null;
+      try {
+        const url = new URL(location.href);
+        const q = url.searchParams.get("mbti");
+        const fromQuery = q ? q.toUpperCase().trim() : null;
+        const fromStorage =
+          (window.localStorage && localStorage.getItem("mbti")) || null;
 
-    document.getElementById("result-text").innerText = result.text;
-    document.getElementById("result-desc").innerText = result.description;
-    document.getElementById("result-img").src = result.img;
-
-    // SNS 공유 함수
-    function shareResult() {
-      const shareData = {
-        title: "황감제 MBTI 테스트",
-        text: `내 결과는 ${mbti} 🍊! ${result.text} - ${result.description}`,
-        url: window.location.href
-      };
-      if (navigator.share) {
-        navigator.share(shareData).catch(console.error);
-      } else {
-        alert("이 브라우저에서는 공유 기능이 지원되지 않아요. 링크를 직접 복사해 주세요!");
+        // 유효성 검사
+        if (fromQuery && RESULTS[fromQuery]) {
+          mbti = fromQuery;
+        } else if (fromStorage && RESULTS[fromStorage]) {
+          mbti = fromStorage;
+          // URL에 쿼리 없으면 보정
+          if (url.searchParams.get("mbti") !== mbti) {
+            url.searchParams.set("mbti", mbti);
+            history.replaceState(null, "", url.toString());
+          }
+        }
+      } catch {
+        // URL 파싱 실패 시 mbti=null 유지
       }
+      return mbti; // 유효하지 않으면 null
     }
+
+    /* ===============================
+       4) 이미지 선로딩
+       - 초기 표시 지연 최소화
+       - 누락 이미지 조기 검출 가능
+       =============================== */
+    (function preloadImages() {
+      const list = Object.values(RESULTS)
+        .map((r) => r.img)
+        .concat([DEFAULT_RESULT.img, "cards/preview.png"]);
+      list.forEach((src) => {
+        const img = new Image();
+        img.src = src;
+      });
+    })();
+
+    /* ===============================
+       5) 렌더 함수
+       - DOM 요소 주입
+       - 이미지 폴백 1회만 허용
+       - 공유/복사 핸들러 바인딩
+       - 기본 결과일 때 robots: noindex 설정
+       =============================== */
+    function render() {
+      const mbti = getMBTIAndNormalizeURL();
+      const data = mbti ? RESULTS[mbti] : DEFAULT_RESULT;
+
+      // 요소 참조
+      const $text = document.getElementById("result-text");
+      const $desc = document.getElementById("result-desc");
+      const $img = document.getElementById("result-img");
+      const $notice = document.getElementById("notice");
+      const $shareBtn = document.getElementById("shareBtn");
+      const $copyBtn = document.getElementById("copyBtn");
+      const $retakeBtn = document.getElementById("retakeBtn");
+      const $caption = document.getElementById("result-caption");
+
+      // 기본 결과면 SEO 차단
+      if (!mbti) {
+        let meta = document.querySelector('meta[name="robots"]');
+        if (!meta) {
+          meta = document.createElement("meta");
+          meta.name = "robots";
+          document.head.appendChild(meta);
+        }
+        meta.setAttribute("content", "noindex,nofollow");
+      }
+
+      // 콘텐츠 주입
+      $text.textContent = mbti ? data.text : DEFAULT_RESULT.text;
+      $desc.textContent = mbti ? data.desc : DEFAULT_RESULT.desc;
+      $img.src = data.img;
+      $img.alt = mbti ? `${mbti} 결과 카드` : "기본 결과 카드";
+      $caption.textContent = data.caption || ""; // 사진 아래 설명 출력
+
+      // 이미지 폴백: 무한 루프 방지
+      let failedOnce = false;
+      $img.onerror = () => {
+        if (failedOnce) return;
+        failedOnce = true;
+        $img.src = DEFAULT_RESULT.img;
+      };
+
+      // 공유용 URL: 현재 URL 사용
+      const shareURL = new URL(location.href);
+      if (mbti) {
+        $notice.textContent = `공유 링크: ${shareURL.toString()}`;
+      } else {
+        $notice.textContent = "유효한 MBTI가 없어 기본 결과를 표시합니다.";
+      }
+
+      // 버튼 핸들러 연결
+      $retakeBtn.onclick = () => {
+        // 테스트 시작 페이지로 이동
+        location.href = "index.html";
+      };
+
+      $shareBtn.onclick = async () => {
+        // 이중 클릭 방지
+        if ($shareBtn.disabled) return;
+        $shareBtn.disabled = true;
+        $shareBtn.setAttribute("aria-busy", "true");
+
+        try {
+          const shareData = {
+            title: "황감제 MBTI 테스트",
+            text: mbti
+              ? `내 결과는 ${mbti} 🍊 — ${data.text}`
+              : "황감제 MBTI 테스트",
+            url: shareURL.toString(),
+          };
+
+          if (navigator.share) {
+            await navigator.share(shareData);
+            console.info("shared", mbti);
+          } else {
+            alert("웹 공유 미지원. '링크 복사하기'를 사용하세요.");
+          }
+        } catch (e) {
+          // 공유 취소 또는 실패
+          console.info("share failed", e);
+          alert("공유가 취소되었거나 실패했습니다.");
+        } finally {
+          $shareBtn.disabled = false;
+          $shareBtn.removeAttribute("aria-busy");
+        }
+      };
+
+      $copyBtn.onclick = async () => {
+        // 클립보드 API 우선 시도
+        try {
+          await navigator.clipboard.writeText(shareURL.toString());
+          $notice.textContent = "링크를 클립보드에 복사했습니다.";
+        } catch {
+          // iOS/구형 브라우저 대체 루틴
+          const tmp = document.createElement("textarea");
+          tmp.value = shareURL.toString();
+          tmp.setAttribute("readonly", "");
+          tmp.style.position = "absolute";
+          tmp.style.left = "-9999px";
+          document.body.appendChild(tmp);
+          tmp.select();
+          document.execCommand("copy");
+          document.body.removeChild(tmp);
+          $notice.textContent = "링크를 복사했습니다.";
+        }
+      };
+    }
+
+    // 최초 렌더
+    render();
   </script>
 </body>
 </html>
-
-
-
